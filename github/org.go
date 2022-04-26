@@ -49,7 +49,7 @@ type Organization struct {
 	} `json:"plan"`
 	DefaultRepositoryPermission          string `json:"default_repository_permission"`
 	MembersCanCreateRepositories         bool   `json:"members_can_create_repositories"`
-	TwoFactorRequirementEnabled          bool   `json:"two_factor_requirement_enabled"`
+	TwoFactorRequirementEnabled          *bool  `json:"two_factor_requirement_enabled"`
 	MembersAllowedRepositoryCreationType string `json:"members_allowed_repository_creation_type"`
 	MembersCanCreatePublicRepositories   bool   `json:"members_can_create_public_repositories"`
 	MembersCanCreatePrivateRepositories  bool   `json:"members_can_create_private_repositories"`

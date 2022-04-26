@@ -76,7 +76,7 @@ func (h hubCheck) Run(rules ...Rule) (map[string][]RuleResult, error) {
 		if err != nil {
 			results[rule.ID()] = []RuleResult{
 				{
-					Level:       hublog.Error,
+					Level:       hublog.Warning,
 					Title:       "Rule execution failed",
 					Description: err.Error(),
 				},
