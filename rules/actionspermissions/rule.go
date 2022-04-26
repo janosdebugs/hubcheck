@@ -63,6 +63,9 @@ func (r rule) Run(org github.Organization) ([]hubcheck.RuleResult, error) {
 		},
 	}
 
+	if actionsPermissions.EnabledRepositories == "none" {
+		return okResult, nil
+	}
 	switch actionsPermissions.AllowedActions {
 	case "selected":
 		return okResult, nil
