@@ -17,10 +17,12 @@ import (
 )
 
 type Client interface {
-	ListOrganizations() ([]Organization, error)
-	GetOrg(id string) (Organization, error)
-	GetGitHubActionsOrgPermissions(id string) (ActionsOrgPermissions, error)
-	ListOrgAdmins(id string) ([]OrgMember, error)
+	ListOrganizations() ([]*Organization, error)
+	GetOrg(login string) (*Organization, error)
+	GetGitHubActionsOrgPermissions(login string) (*ActionsPermissions, error)
+	ListOrgAdmins(login string) ([]*OrgMember, error)
+	ListOrgRepositories(login string) ([]*Repository, error)
+	GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error)
 }
 
 func NewClient(logger hublog.Logger, accessToken string) (Client, error) {
@@ -57,38 +59,69 @@ type client struct {
 	logger      hublog.Logger
 }
 
-func (c *client) ListOrgAdmins(id string) ([]OrgMember, error) {
-	members, err := listRequest[OrgMember](c, "GET", fmt.Sprintf("orgs/%s/members?role=admin", url.PathEscape(id)))
+func (c *client) GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error) {
+	resp := &ActionsPermissions{}
+	if err := getRequest(
+		c,
+		"GET",
+		"repos/"+url.PathEscape(login)+"/"+url.PathEscape(repoName)+"/actions/permissions",
+		resp,
+	); err != nil {
+		return nil, fmt.Errorf(
+			"failed to fetch GitHub Actions permissions for repo %s/%s (%w)",
+			login,
+			repoName,
+			err,
+		)
+	}
+	resp.client = c
+	return resp, nil
+}
+
+func (c *client) ListOrgRepositories(login string) ([]*Repository, error) {
+	repos, err := listRequest[*Repository](c, "GET", fmt.Sprintf("orgs/%s/repos", url.PathEscape(login)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to list organization repositories (%w)", err)
+	}
+	for _, repo := range repos {
+		repo.client = c
+		repo.orgLogin = login
+	}
+	return repos, nil
+}
+
+func (c *client) ListOrgAdmins(id string) ([]*OrgMember, error) {
+	members, err := listRequest[*OrgMember](c, "GET", fmt.Sprintf("orgs/%s/members?role=admin", url.PathEscape(id)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list organization %s members (%w)", id, err)
 	}
 	return members, nil
 }
 
-func (c *client) GetGitHubActionsOrgPermissions(id string) (ActionsOrgPermissions, error) {
-	resp := &ActionsOrgPermissions{}
+func (c *client) GetGitHubActionsOrgPermissions(id string) (*ActionsPermissions, error) {
+	resp := &ActionsPermissions{}
 	if err := getRequest(c, "GET", "orgs/"+url.PathEscape(id)+"/actions/permissions", resp); err != nil {
-		return ActionsOrgPermissions{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"failed to fetch GitHub Actions permissions for organization %s (%w)",
 			id,
 			err,
 		)
 	}
 	resp.client = c
-	return *resp, nil
+	return resp, nil
 }
 
-func (c *client) GetOrg(id string) (Organization, error) {
+func (c *client) GetOrg(id string) (*Organization, error) {
 	org := &Organization{}
 	if err := getRequest(c, "GET", "orgs/"+url.PathEscape(id), org); err != nil {
-		return Organization{}, fmt.Errorf("failed to fetch organization %s (%w)", id, err)
+		return nil, fmt.Errorf("failed to fetch organization %s (%w)", id, err)
 	}
 	org.client = c
-	return *org, nil
+	return org, nil
 }
 
-func (c *client) ListOrganizations() ([]Organization, error) {
-	orgs, err := listRequest[Organization](c, "GET", "user/orgs")
+func (c *client) ListOrganizations() ([]*Organization, error) {
+	orgs, err := listRequest[*Organization](c, "GET", "user/orgs")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list organizations (%w)", err)
 	}

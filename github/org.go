@@ -58,10 +58,14 @@ type Organization struct {
 	MembersCanForkPrivateRepositories    bool   `json:"members_can_fork_private_repositories"`
 }
 
-func (o Organization) GetActionsPermissions() (ActionsOrgPermissions, error) {
+func (o Organization) GetActionsPermissions() (*ActionsPermissions, error) {
 	return o.client.GetGitHubActionsOrgPermissions(o.Login)
 }
 
-func (o Organization) ListAdmins() ([]OrgMember, error) {
+func (o Organization) ListAdmins() ([]*OrgMember, error) {
 	return o.client.ListOrgAdmins(o.Login)
+}
+
+func (o Organization) ListRepositories() ([]*Repository, error) {
+	return o.client.ListOrgRepositories(o.Login)
 }

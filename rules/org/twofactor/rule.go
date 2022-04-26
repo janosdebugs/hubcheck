@@ -9,7 +9,7 @@ import (
 	"go.debugged.it/hubcheck/hublog"
 )
 
-func New() hubcheck.Rule {
+func New() hubcheck.OrgRule {
 	return &rule{}
 }
 
@@ -32,12 +32,12 @@ func (r rule) ID() string {
 	return "two-factor"
 }
 
-func (r rule) Run(org github.Organization) ([]hubcheck.RuleResult, error) {
+func (r rule) Run(org *github.Organization) ([]hubcheck.RuleResult, error) {
 	if org.TwoFactorRequirementEnabled == nil {
 		return []hubcheck.RuleResult{
 			{
 				Level:       hublog.Warning,
-				Title:       "Rule execution failed",
+				Title:       "OrgRule execution failed",
 				Description: "Are you an admin?",
 				FixURL: fmt.Sprintf(
 					"https://github.com/organizations/%s/settings/security",

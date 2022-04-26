@@ -9,7 +9,7 @@ import (
 	"go.debugged.it/hubcheck/hublog"
 )
 
-func New() hubcheck.Rule {
+func New() hubcheck.OrgRule {
 	return &rule{}
 }
 
@@ -32,7 +32,7 @@ func (r rule) ID() string {
 	return "github-actions-workflow-approvals"
 }
 
-func (r rule) Run(org github.Organization) ([]hubcheck.RuleResult, error) {
+func (r rule) Run(org *github.Organization) ([]hubcheck.RuleResult, error) {
 	return []hubcheck.RuleResult{
 		{
 			Level:       hublog.Info,

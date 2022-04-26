@@ -7,7 +7,8 @@ import (
 
 	"go.debugged.it/hubcheck"
 	"go.debugged.it/hubcheck/hublog"
-	"go.debugged.it/hubcheck/rules"
+	orgRules "go.debugged.it/hubcheck/rules/org"
+	repoRules "go.debugged.it/hubcheck/rules/repo"
 )
 
 func main() {
@@ -20,9 +21,13 @@ func main() {
 
 	flag.Parse()
 
-	ruleList := rules.New()
+	orgRuleList := orgRules.New()
+	repoRuleList := repoRules.New()
 	if printRules {
-		for _, rule := range ruleList {
+		for _, rule := range orgRuleList {
+			fmt.Printf("## %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())
+		}
+		for _, rule := range repoRuleList {
 			fmt.Printf("## %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())
 		}
 		return
@@ -41,7 +46,8 @@ func main() {
 	}
 
 	results, err := hc.Run(
-		ruleList...,
+		orgRuleList,
+		repoRuleList,
 	)
 	if err != nil {
 		logger.WithLevel(hublog.Error).Loge(err)
@@ -54,11 +60,15 @@ func main() {
 			if result.Level == hublog.Warning || result.Level == hublog.Error {
 				failed = true
 			}
+			name := result.Title
+			if result.Repository != "" {
+				name = fmt.Sprintf("%s on %s", name, result.Repository)
+			}
 			if result.FixURL != "" && result.DocURL != "" {
 				logger.WithLevel(result.Level).Logf(
 					"[%s] %s: %s Please visit %s to change this setting. More information is available at %s.",
 					rule,
-					result.Title,
+					name,
 					result.Description,
 					result.FixURL,
 					result.DocURL,
@@ -67,7 +77,7 @@ func main() {
 				logger.WithLevel(result.Level).Logf(
 					"[%s] %s: %s",
 					rule,
-					result.Title,
+					name,
 					result.Description,
 				)
 			}

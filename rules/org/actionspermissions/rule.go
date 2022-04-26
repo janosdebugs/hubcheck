@@ -9,7 +9,7 @@ import (
 	"go.debugged.it/hubcheck/hublog"
 )
 
-func New() hubcheck.Rule {
+func New() hubcheck.OrgRule {
 	return &rule{}
 }
 
@@ -21,7 +21,7 @@ func (r rule) DocURL() string {
 }
 
 func (r rule) Name() string {
-	return "Limit GitHub Actions"
+	return "Limit GitHub Actions on the organization"
 }
 
 func (r rule) Description() string {
@@ -32,7 +32,7 @@ func (r rule) ID() string {
 	return "github-actions-permissions"
 }
 
-func (r rule) Run(org github.Organization) ([]hubcheck.RuleResult, error) {
+func (r rule) Run(org *github.Organization) ([]hubcheck.RuleResult, error) {
 	actionsPermissions, err := org.GetActionsPermissions()
 	if err != nil {
 		return nil, err

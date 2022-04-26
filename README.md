@@ -28,7 +28,7 @@ To ensure that organization members cannot carry out destructive actions, such a
 
 Read more: https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/setting-base-permissions-for-an-organization
 
-### Limit GitHub Actions
+### Limit GitHub Actions on the organization
 
 Allowing all GitHub Actions to run introduces the risk of accidentally exposing sensitive credentials to untrusted, or even malicious developers.
 
@@ -46,5 +46,13 @@ If an organization has only one administrator it is easy to lose access to it. I
 
 Read more: https://docs.github.com/en/organizations/managing-membership-in-your-organization
 
+### Limit GitHub Actions on repositories
+
+Allowing all GitHub Actions to run introduces the risk of accidentally exposing sensitive credentials to untrusted, or even malicious developers.
+
+Read more: https://docs.github.com/en/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization
+
 <!-- endregion -->
+
+
 
