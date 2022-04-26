@@ -64,7 +64,7 @@ func (r rule) Run(org github.Organization) ([]hubcheck.RuleResult, error) {
 	}
 
 	switch actionsPermissions.AllowedActions {
-	case "none":
+	case "selected":
 		return okResult, nil
 	case "local_only":
 		return okResult, nil
