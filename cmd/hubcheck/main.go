@@ -9,6 +9,7 @@ import (
 	"go.debugged.it/hubcheck/hublog"
 	"go.debugged.it/hubcheck/rules/actionspermissions"
 	"go.debugged.it/hubcheck/rules/defaultrepopermission"
+	"go.debugged.it/hubcheck/rules/orgadmins"
 	"go.debugged.it/hubcheck/rules/twofactor"
 	"go.debugged.it/hubcheck/rules/workflowapprovals"
 )
@@ -28,6 +29,7 @@ func main() {
 		defaultrepopermission.New(),
 		actionspermissions.New(),
 		workflowapprovals.New(),
+		orgadmins.New(),
 	}
 	if printRules {
 		for _, rule := range rules {

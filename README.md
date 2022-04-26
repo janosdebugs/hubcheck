@@ -31,3 +31,15 @@ Read more: https://docs.github.com/en/organizations/managing-access-to-your-orga
 Allowing all GitHub Actions to run introduces the risk of accidentally exposing sensitive credentials to untrusted, or even malicious developers.
 
 Read more: https://docs.github.com/en/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization
+
+### Require workflow approvals (manual)
+
+Workflow approvals cannot be checked automatically, please check them manually. When a pull request is submitted from a fork, GitHub actions should not be run automatically or you risk exposing sensitive credentials to untrusted code. You should change your settings to require approvals from a project maintainer in order to run workflows.
+
+Read more: https://docs.github.com/en/actions/managing-workflow-runs/approving-workflow-runs-from-public-forks
+
+### Organizations should have between 2 and 5 administrators
+
+If an organization has only one administrator it is easy to lose access to it. If an organization has too many administrators it means that permissions are handled too liberally.
+
+Read more: https://docs.github.com/en/organizations/managing-membership-in-your-organization
