@@ -23,6 +23,7 @@ type Client interface {
 	ListOrgAdmins(login string) ([]*OrgMember, error)
 	ListOrgRepositories(login string) ([]*Repository, error)
 	GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error)
+	RepoVulnerabilityAlertsEnabled(login string, repoName string) (bool, error)
 }
 
 func NewClient(logger hublog.Logger, accessToken string) (Client, error) {
@@ -57,6 +58,29 @@ type client struct {
 	accessToken string
 	cli         *http.Client
 	logger      hublog.Logger
+}
+
+func (c *client) RepoVulnerabilityAlertsEnabled(login string, repoName string) (bool, error) {
+	statusCode, _, body, err := c.request(
+		"GET",
+		fmt.Sprintf("https://api.github.com/repos/%s/%s/vulnerability-alerts", login, repoName),
+	)
+	if err != nil {
+		return false, fmt.Errorf("failed to query repository %s vulnerability alert settings (%w)", repoName, err)
+	}
+	switch statusCode {
+	case 204:
+		return true, nil
+	case 404:
+		return false, nil
+	default:
+		return false, fmt.Errorf(
+			"unexpected HTTP status code for repository %s vulnerability alerts: %d (%s)",
+			repoName,
+			statusCode,
+			body,
+		)
+	}
 }
 
 func (c *client) GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error) {

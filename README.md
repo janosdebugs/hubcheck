@@ -52,7 +52,15 @@ Allowing all GitHub Actions to run introduces the risk of accidentally exposing 
 
 Read more: https://docs.github.com/en/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization
 
+### Vulnerability alerts
+
+Vulnerability alerts warn if a library used as a dependency has a known vulnerability and should be updated.
+
+Read more: https://docs.github.com/en/code-security/dependabot/dependabot-alerts/about-dependabot-alerts
+
 <!-- endregion -->
+
+
 
 
 
