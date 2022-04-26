@@ -7,11 +7,7 @@ import (
 
 	"go.debugged.it/hubcheck"
 	"go.debugged.it/hubcheck/hublog"
-	"go.debugged.it/hubcheck/rules/actionspermissions"
-	"go.debugged.it/hubcheck/rules/defaultrepopermission"
-	"go.debugged.it/hubcheck/rules/orgadmins"
-	"go.debugged.it/hubcheck/rules/twofactor"
-	"go.debugged.it/hubcheck/rules/workflowapprovals"
+	"go.debugged.it/hubcheck/rules"
 )
 
 func main() {
@@ -24,15 +20,9 @@ func main() {
 
 	flag.Parse()
 
-	rules := []hubcheck.Rule{
-		twofactor.New(),
-		defaultrepopermission.New(),
-		actionspermissions.New(),
-		workflowapprovals.New(),
-		orgadmins.New(),
-	}
+	ruleList := rules.New()
 	if printRules {
-		for _, rule := range rules {
+		for _, rule := range ruleList {
 			fmt.Printf("## %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())
 		}
 		return
@@ -51,7 +41,7 @@ func main() {
 	}
 
 	results, err := hc.Run(
-		rules...,
+		ruleList...,
 	)
 	if err != nil {
 		logger.WithLevel(hublog.Error).Loge(err)
