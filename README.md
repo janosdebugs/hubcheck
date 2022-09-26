@@ -58,6 +58,12 @@ Vulnerability alerts warn if a library used as a dependency has a known vulnerab
 
 Read more: https://docs.github.com/en/code-security/dependabot/dependabot-alerts/about-dependabot-alerts
 
+### License check
+
+This rule warns you if a public repository has no license.
+
+Read more: https://docs.github.com/articles/adding-a-license-to-a-repository/
+
 <!-- endregion -->
 
 
