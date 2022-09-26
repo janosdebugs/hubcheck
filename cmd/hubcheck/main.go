@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/gobwas/glob"
 	"go.debugged.it/hubcheck"
 	"go.debugged.it/hubcheck/hublog"
 	orgRules "go.debugged.it/hubcheck/rules/org"
@@ -15,16 +17,31 @@ func main() {
 	org := ""
 	printRules := false
 	logLevel := string(hublog.Info)
+	ignoreFiles := "vendor/**;venv/**;virtualenv/**"
+	reportFilesContaining := ""
 
 	flag.StringVar(&org, "org", "", "Organization ID (in case you have access to more than one organization)")
 	flag.BoolVar(&printRules, "rules", false, "List all rules.")
 	flag.StringVar(&logLevel, "log-level", logLevel, "Minimum log level (debug, info, notice, warning, error).")
+	flag.StringVar(&ignoreFiles, "ignore-files", ignoreFiles, "Vendor directories to ignore from analysis.")
+	flag.StringVar(&reportFilesContaining, "report-files-containing", reportFilesContaining, "Report files containing this term.")
 	flag.Parse()
 
 	logger := hublog.New(hublog.Level(logLevel))
 
+	var ignoreFilesList []glob.Glob
+	if ignoreFiles != "" {
+		for _, f := range strings.Split(ignoreFiles, ";") {
+			g, err := glob.Compile(f)
+			if err != nil {
+				logger.WithLevel(hublog.Error).Loge(err)
+			}
+			ignoreFilesList = append(ignoreFilesList, g)
+		}
+	}
+
 	orgRuleList := orgRules.New()
-	repoRuleList := repoRules.New()
+	repoRuleList := repoRules.New(ignoreFilesList, reportFilesContaining)
 	if printRules {
 		for _, rule := range orgRuleList {
 			fmt.Printf("## %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())

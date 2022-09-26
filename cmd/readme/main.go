@@ -15,8 +15,11 @@ func main() {
 	for _, rule := range orgRules.New() {
 		output += fmt.Sprintf("### %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())
 	}
-	for _, rule := range repoRules.New() {
-		output += fmt.Sprintf("### %s\n\n%s\n\nRead more: %s\n\n", rule.Name(), rule.Description(), rule.DocURL())
+	for _, rule := range repoRules.New(nil, "") {
+		output += fmt.Sprintf("### %s\n\n%s\n\n", rule.Name(), rule.Description())
+		if rule.DocURL() != "" {
+			output += fmt.Sprintf("Read more: %s\n\n", rule.DocURL())
+		}
 	}
 	output += "<!-- endregion -->\n\n"
 

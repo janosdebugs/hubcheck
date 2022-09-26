@@ -82,7 +82,15 @@ Repositories should not have IDE artifacts committed (such as .vscode, .idea, *.
 
 Read more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+### Files containing a user-configurable term
+
+This rule alerts for files containing a user-configurable term.
+
 <!-- endregion -->
+
+
+
+
 
 
 
