@@ -12,14 +12,16 @@ import (
 )
 
 func main() {
-	logger := hublog.New()
 	org := ""
 	printRules := false
+	logLevel := string(hublog.Info)
 
 	flag.StringVar(&org, "org", "", "Organization ID (in case you have access to more than one organization)")
 	flag.BoolVar(&printRules, "rules", false, "List all rules.")
-
+	flag.StringVar(&logLevel, "log-level", logLevel, "Minimum log level (debug, info, notice, warning, error).")
 	flag.Parse()
+
+	logger := hublog.New(hublog.Level(logLevel))
 
 	orgRuleList := orgRules.New()
 	repoRuleList := repoRules.New()
@@ -54,6 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	print("# Report for the " + org + " GitHub organization\n\n")
 	failed := false
 	for rule, resultList := range results {
 		for _, result := range resultList {
@@ -64,26 +67,55 @@ func main() {
 			if result.Repository != "" {
 				name = fmt.Sprintf("%s on %s", name, result.Repository)
 			}
-			if result.FixURL != "" && result.DocURL != "" {
-				logger.WithLevel(result.Level).Logf(
-					"[%s] %s: %s Please visit %s to fix this issue. More information may be available at %s.",
-					rule,
-					name,
-					result.Description,
-					result.FixURL,
-					result.DocURL,
-				)
-			} else {
-				logger.WithLevel(result.Level).Logf(
-					"[%s] %s: %s",
-					rule,
-					name,
-					result.Description,
-				)
-			}
+
+			printResult(org, rule, result, hublog.Level(logLevel))
 		}
 	}
 	if failed {
 		os.Exit(1)
 	}
+}
+
+func printResult(org string, rule string, result hubcheck.RuleResult, level hublog.Level) {
+	prefix := ""
+	suffix := "\033[0m\n\n"
+	switch result.Level {
+	case hublog.Debug:
+		if level != hublog.Debug {
+			return
+		}
+		prefix = "\033[37m## ⚙️ "
+	case hublog.Info:
+		if level != hublog.Debug && level != hublog.Info {
+			return
+		}
+		prefix = "\033[36m## ℹ️ "
+	case hublog.Notice:
+		if level != hublog.Debug && level != hublog.Info && level != hublog.Notice {
+			return
+		}
+		prefix = "\033[32m## ✅️ "
+	case hublog.Warning:
+		if level != hublog.Debug && level != hublog.Info && level != hublog.Notice && level != hublog.Warning {
+			return
+		}
+		prefix = "\033[33m## ⚠️"
+	case hublog.Error:
+		prefix = "\033[31m## ❌ "
+	}
+
+	print(prefix + result.Title + " (`" + rule + "`)" + suffix)
+	print(result.Description + "\n\n")
+	if result.Repository != "" {
+		print("- \033[1m**Repository:**\033[0m [" + org + "/" + result.Repository + "](https://github.com/" + org + "/" + result.Repository + ")\n")
+	} else {
+		print("- \033[1m**Organization:**\033[0m [" + org + "](https://github.com/" + org + ")\n")
+	}
+	if result.FixURL != "" {
+		print("- \033[1m**Quick fix:**\033[0m " + result.FixURL + "\n")
+	}
+	if result.DocURL != "" {
+		print("- \033[1m**Documentation:**\033[0m " + result.DocURL + "\n")
+	}
+	print("\n---\n\n")
 }

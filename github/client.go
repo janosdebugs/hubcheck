@@ -101,7 +101,7 @@ func (c *client) GetGitHubActionsRepoPermissions(login string, repoName string) 
 		resp,
 	); err != nil {
 		return nil, fmt.Errorf(
-			"failed to fetch GitHub Actions permissions for repo %s/%s (%w)",
+			"Failed to fetch GitHub Actions permissions for repo %s/%s. (Did you forget to add the admin permissions to your GitHub token?) (%w)",
 			login,
 			repoName,
 			err,
@@ -114,7 +114,7 @@ func (c *client) GetGitHubActionsRepoPermissions(login string, repoName string) 
 func (c *client) ListOrgRepositories(login string) ([]*Repository, error) {
 	repos, err := listRequest[*Repository](c, "GET", fmt.Sprintf("orgs/%s/repos", url.PathEscape(login)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to list organization repositories (%w)", err)
+		return nil, fmt.Errorf("Failed to list organization repositories. (%w)", err)
 	}
 	for _, repo := range repos {
 		repo.client = c
@@ -126,7 +126,7 @@ func (c *client) ListOrgRepositories(login string) ([]*Repository, error) {
 func (c *client) ListOrgAdmins(id string) ([]*OrgMember, error) {
 	members, err := listRequest[*OrgMember](c, "GET", fmt.Sprintf("orgs/%s/members?role=admin", url.PathEscape(id)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to list organization %s members (%w)", id, err)
+		return nil, fmt.Errorf("Failed to list organization %s members. (%w)", id, err)
 	}
 	return members, nil
 }
@@ -135,7 +135,7 @@ func (c *client) GetGitHubActionsOrgPermissions(id string) (*ActionsPermissions,
 	resp := &ActionsPermissions{}
 	if err := getRequest(c, "GET", "orgs/"+url.PathEscape(id)+"/actions/permissions", resp); err != nil {
 		return nil, fmt.Errorf(
-			"failed to fetch GitHub Actions permissions for organization %s (%w)",
+			"Failed to fetch GitHub Actions permissions for organization %s. (%w)",
 			id,
 			err,
 		)
@@ -147,7 +147,7 @@ func (c *client) GetGitHubActionsOrgPermissions(id string) (*ActionsPermissions,
 func (c *client) GetOrg(id string) (*Organization, error) {
 	org := &Organization{}
 	if err := getRequest(c, "GET", "orgs/"+url.PathEscape(id), org); err != nil {
-		return nil, fmt.Errorf("failed to fetch organization %s (%w)", id, err)
+		return nil, fmt.Errorf("Failed to fetch organization %s. (%w)", id, err)
 	}
 	org.client = c
 	return org, nil
@@ -156,7 +156,7 @@ func (c *client) GetOrg(id string) (*Organization, error) {
 func (c *client) ListOrganizations() ([]*Organization, error) {
 	orgs, err := listRequest[*Organization](c, "GET", "user/orgs")
 	if err != nil {
-		return nil, fmt.Errorf("failed to list organizations (%w)", err)
+		return nil, fmt.Errorf("Failed to list organizations. (%w)", err)
 	}
 	for _, org := range orgs {
 		org.client = c
