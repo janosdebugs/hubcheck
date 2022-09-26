@@ -49,3 +49,7 @@ func (r Repository) GetActionsPermissions() (*ActionsPermissions, error) {
 func (r Repository) VulnerabilityAlertsEnabled() (bool, error) {
 	return r.client.RepoVulnerabilityAlertsEnabled(r.orgLogin, r.Name)
 }
+
+func (r Repository) ListContents() ([]RepoDirEntry, error) {
+	return r.client.ListContents(r.orgLogin, r.Name)
+}

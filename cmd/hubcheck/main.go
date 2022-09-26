@@ -66,7 +66,7 @@ func main() {
 			}
 			if result.FixURL != "" && result.DocURL != "" {
 				logger.WithLevel(result.Level).Logf(
-					"[%s] %s: %s Please visit %s to change this setting. More information is available at %s.",
+					"[%s] %s: %s Please visit %s to fix this issue. More information may be available at %s.",
 					rule,
 					name,
 					result.Description,

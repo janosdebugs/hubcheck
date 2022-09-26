@@ -69,7 +69,7 @@ func (r rule) Run(org *github.Organization, repo *github.Repository) ([]hubcheck
 
 	return []hubcheck.RuleResult{
 		{
-			Level:       hublog.Warning,
+			Level:       hublog.Error,
 			Repository:  repo.Name,
 			Title:       "Repository has no license",
 			Description: fmt.Sprintf("This repository does not have a license file."),

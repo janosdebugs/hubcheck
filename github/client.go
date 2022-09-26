@@ -24,6 +24,7 @@ type Client interface {
 	ListOrgRepositories(login string) ([]*Repository, error)
 	GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error)
 	RepoVulnerabilityAlertsEnabled(login string, repoName string) (bool, error)
+	ListContents(login string, repoName string) ([]RepoDirEntry, error)
 }
 
 func NewClient(logger hublog.Logger, accessToken string) (Client, error) {
@@ -48,9 +49,10 @@ func NewClient(logger hublog.Logger, accessToken string) (Client, error) {
 	}
 
 	return &client{
-		logger:      logger,
-		accessToken: accessToken,
-		cli:         cli,
+		logger:           logger,
+		accessToken:      accessToken,
+		cli:              cli,
+		repoContentCache: map[string][]RepoDirEntry{},
 	}, nil
 }
 
@@ -58,6 +60,8 @@ type client struct {
 	accessToken string
 	cli         *http.Client
 	logger      hublog.Logger
+
+	repoContentCache map[string][]RepoDirEntry
 }
 
 func (c *client) RepoVulnerabilityAlertsEnabled(login string, repoName string) (bool, error) {
@@ -158,6 +162,57 @@ func (c *client) ListOrganizations() ([]*Organization, error) {
 		org.client = c
 	}
 	return orgs, nil
+}
+
+type FileType string
+
+//goland:noinspection GoUnusedConst
+const (
+	FileTypeDir       FileType = "dir"
+	FileTypeFile      FileType = "file"
+	FileTypeSubmodule FileType = "submodule"
+	FileTypeSymlink   FileType = "symlink"
+)
+
+type RepoDirEntry struct {
+	Type FileType `json:"type"`
+	Size int      `json:"size"`
+	Name string   `json:"name"`
+	Path string   `json:"path"`
+	Sha  string   `json:"sha"`
+}
+
+func (c *client) listContents(orgID string, repoID string, path string) ([]RepoDirEntry, error) {
+	var response []RepoDirEntry
+	urlPath := fmt.Sprintf("repos/%s/%s/contents/%s", url.PathEscape(orgID), url.PathEscape(repoID), path)
+	if err := getRequest(c, "GET", urlPath, &response); err != nil {
+		return nil, err
+	}
+
+	result := response
+	for _, item := range response {
+		if item.Type != FileTypeDir {
+			continue
+		}
+		subResult, err := c.listContents(orgID, repoID, item.Path)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, subResult...)
+	}
+	return result, nil
+}
+
+func (c *client) ListContents(orgID string, repoID string) ([]RepoDirEntry, error) {
+	if contents, ok := c.repoContentCache[orgID+"/"+repoID]; ok {
+		return contents, nil
+	}
+	contents, err := c.listContents(orgID, repoID, "")
+	if err != nil {
+		return nil, err
+	}
+	c.repoContentCache[orgID+"/"+repoID] = contents
+	return contents, nil
 }
 
 type errorResponse struct {
