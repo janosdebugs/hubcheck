@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +26,7 @@ type Client interface {
 	GetGitHubActionsRepoPermissions(login string, repoName string) (*ActionsPermissions, error)
 	RepoVulnerabilityAlertsEnabled(login string, repoName string) (bool, error)
 	ListContents(login string, repoName string) ([]RepoDirEntry, error)
+	GetContents(login string, repoName string, path string) ([]byte, error)
 }
 
 func NewClient(logger hublog.Logger, accessToken string) (Client, error) {
@@ -174,12 +176,24 @@ const (
 	FileTypeSymlink   FileType = "symlink"
 )
 
+//goland:noinspection GoVetStructTag
 type RepoDirEntry struct {
+	c      *client `json:"-"`
+	orgID  string  `json:"-"`
+	repoID string  `json:"-"`
+
 	Type FileType `json:"type"`
 	Size int      `json:"size"`
 	Name string   `json:"name"`
 	Path string   `json:"path"`
 	Sha  string   `json:"sha"`
+}
+
+func (e *RepoDirEntry) GetContents() ([]byte, error) {
+	if e.Type != FileTypeFile {
+		return nil, fmt.Errorf("Bug: Non-file types cannot be fetched (%s).", e.Path)
+	}
+	return e.c.GetContents(e.orgID, e.repoID, e.Path)
 }
 
 func (c *client) listContents(orgID string, repoID string, path string) ([]RepoDirEntry, error) {
@@ -190,7 +204,10 @@ func (c *client) listContents(orgID string, repoID string, path string) ([]RepoD
 	}
 
 	result := response
-	for _, item := range response {
+	for i, item := range result {
+		result[i].c = c
+		result[i].orgID = orgID
+		result[i].repoID = repoID
 		if item.Type != FileTypeDir {
 			continue
 		}
@@ -213,6 +230,27 @@ func (c *client) ListContents(orgID string, repoID string) ([]RepoDirEntry, erro
 	}
 	c.repoContentCache[orgID+"/"+repoID] = contents
 	return contents, nil
+}
+
+type fileContents struct {
+	Content  string `json:"content"`
+	Encoding string `json:"encoding"`
+}
+
+func (c *client) GetContents(orgID string, repoID string, path string) ([]byte, error) {
+	urlPath := fmt.Sprintf("repos/%s/%s/contents/%s", url.PathEscape(orgID), url.PathEscape(repoID), path)
+	var f fileContents
+	if err := getRequest(c, "GET", urlPath, &f); err != nil {
+		return nil, err
+	}
+	switch f.Encoding {
+	case "base64":
+		return base64.StdEncoding.DecodeString(f.Content)
+	case "":
+		return []byte(f.Content), nil
+	default:
+		return nil, fmt.Errorf("Unsupported content encoding: %s", f.Encoding)
+	}
 }
 
 type errorResponse struct {
