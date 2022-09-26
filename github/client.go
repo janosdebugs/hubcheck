@@ -71,6 +71,11 @@ func (c *client) RepoVulnerabilityAlertsEnabled(login string, repoName string) (
 	switch statusCode {
 	case 204:
 		return true, nil
+	case 403:
+		return false, fmt.Errorf(
+			"you do not have permissions to query vulnerability alerts for repository %s",
+			repoName,
+		)
 	case 404:
 		return false, nil
 	default:
