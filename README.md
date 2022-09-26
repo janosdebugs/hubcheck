@@ -58,13 +58,35 @@ Vulnerability alerts warn if a library used as a dependency has a known vulnerab
 
 Read more: https://docs.github.com/en/code-security/dependabot/dependabot-alerts/about-dependabot-alerts
 
-### License check
+### Repository license
 
-This rule warns you if a public repository has no license.
+Public repositories should have a license.
 
 Read more: https://docs.github.com/articles/adding-a-license-to-a-repository/
 
+### Repository README
+
+Repositories should have a README file.
+
+Read more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes
+
+### Repository .gitignore
+
+Repositories should have a .gitignore file.
+
+Read more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+### IDE artifacts
+
+Repositories should not have IDE artifacts committed (such as .vscode, .idea, *.iml, etc.)
+
+Read more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
 <!-- endregion -->
+
+
+
+
 
 
 
